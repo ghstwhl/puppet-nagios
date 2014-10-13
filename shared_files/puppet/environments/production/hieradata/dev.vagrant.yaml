@@ -1,0 +1,19 @@
+---
+# dev.vagrant.yaml
+# overrides for the "vagrant" vo_location
+
+# Hierarchy is
+#  clientcert (fqdn)
+#  vo_env.vo_location
+#  vo_env
+#  vo_location
+#  defaults
+
+# Class defaults
+
+mysql::server::root_password: 'S4sqv4tsch'
+
+# Other variables
+
+nrpe_mysql_user:      'root'
+nrpe_mysql_password:  "%{hiera('mysql::server::root_password')}"

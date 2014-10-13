@@ -1,0 +1,19 @@
+---
+# defaults.yaml
+# Default values for hiera
+
+# Hierarchy is
+#  clientcert (fqdn)
+#  vo_env.vo_location
+#  vo_env
+#  vo_location
+#  defaults
+
+hiera_message: "This is a sample variable that came from the default Hiera datasource"
+
+# Class defaults
+puppet::agent: true
+
+mysql::server::root_password: 'mypass'
+
+# Other variables

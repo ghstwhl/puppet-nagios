@@ -1,0 +1,83 @@
+---
+# vagrant.yaml
+# overrides for the "vagrant" vo_location
+
+# Hierarchy is
+#  clientcert (fqdn)
+#  vo_env.vo_location
+#  vo_env
+#  vo_location
+#  defaults
+
+hiera_message: "This is a sample variable that came from the vagrant Hiera datasource"
+
+# Class parameter defaults
+
+apache::purge_configs: 'true'
+apache::mpm_module: 'prefork'
+
+foreman::unattended: false
+foreman::db_type: 'sqlite'
+
+haproxy::maxconn: '1000'
+haproxy::defaults_options::stats: 'enable'
+
+mysql::server::root_password: 'vagrantpass'
+
+puppet::server_passenger: true
+puppet::server_external_nodes: ''
+puppet::server_directory_environments: true
+puppet::server_environments: ['development', 'staging', 'production']
+puppet::server_envs_dir: '/etc/puppet/environments'
+puppet::server_storeconfigs_backend: 'puppetdb'
+puppet::server_git_repo: false
+puppet::server_dynamic_environments: false
+puppet::puppetmaster: 'puppet1.dev.vagrant.victorops.net'
+#puppet::version: 'latest'
+
+# Other variables
+
+haproxy_serverip: '10.2.0.8'
+webapp_listening_service: 'vg_web00'
+
+nagios_serverip:      '10.2.0.3'
+nagios_config_tmpdir: '/etc/nagios3/tmp'
+nagios_config_rundir: '/etc/nagios3/objects'
+
+# Password is "nagiosadmin"
+nagiosadmin_password: '$apr1$K9h.rQtY$r182KTHAW0IOVSHMW3.DY1'
+nag_local_hostgroups:
+  - 'pr-servers'
+  - 'stg-servers'
+  - 'dev-servers'
+  - 'lab-servers'
+  - 'vagrant-servers'
+  - 'kcmo01-servers'
+  - 'ubuntu-servers'
+  - 'virtual-servers'
+  - 'physical-servers'
+  - 'nagios-servers'
+  - 'puppet-servers'
+  - 'database-servers'
+  - 'web-servers'
+  - 'haproxy-servers'
+  - 'misc-servers'
+
+nag_func_hostgroup_map:
+  nag_gr_nagios_servers:    vo_st_nagios_server
+  nag_gr_puppet_servers:    vo_st_puppet_server
+  nag_gr_database_servers:  vo_st_database_server
+  nag_gr_web_servers:       vo_st_web_server
+  nag_gr_haproxy_servers:   vo_st_haproxy_server
+
+nag_local_servicegroups:
+  - 'database-services'
+  - 'application-services'
+  - 'system-services'
+
+nag_local_contactgroups:
+  - 'sysops'
+  - 'devops'
+
+nrpe_mysql_user:      'root'
+nrpe_mysql_password:  'vagrantpass'

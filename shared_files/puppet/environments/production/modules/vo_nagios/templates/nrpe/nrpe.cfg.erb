@@ -1,0 +1,40 @@
+# Consolidated NRPE file
+# Made entirely from recycled shopping bags
+# 2009-07-16 AZRC
+# Made entirely from recycled nrpe configs
+# 2013-03-18 MJM
+#
+# This file is managed by Puppet
+# Local changes will be overwritten
+
+debug=0
+dont_blame_nrpe=0
+nrpe_user=nagios
+nrpe_group=nagios
+pid_file=/var/run/nagios/nrpe.pid
+server_port=5666
+command_timeout=60
+include_dir=/etc/nagios/nrpe.d/
+allowed_hosts=<%= @nrpe_allowed_hosts %>
+
+# Disk checks
+command[check_rootvol]=/usr/lib/nagios/plugins/check_disk -w 15% -c 8% -p /
+
+# Process checks
+command[check_zombie_procs]=/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
+command[check_total_procs]=/usr/lib/nagios/plugins/check_procs -w 500 -c 2000
+command[check_collectd]=/usr/lib/nagios/plugins/check_procs -w 1:1 -c 1:1 -C collectd
+command[check_rsyslogd]=/usr/lib/nagios/plugins/check_procs -w 1:1 -c 1:1 -C rsyslogd
+
+# Memory checks
+command[check_swap]=/usr/lib/nagios/plugins/check_swap -w 75% -c 60%
+
+# Other checks
+command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
+command[check_users]=/usr/lib/nagios/plugins/check_users -w 3 -c 6
+
+# Server-specific checks
+<% if @nag_gr_haproxy_servers -%>
+# Haproxy server-specific checks
+command[check_haproxy_proc]=/usr/lib/nagios/plugins/check_procs -w 1:1 -c 1:1 -C haproxy -a /etc/haproxy/haproxy.cfg
+<% end -%>

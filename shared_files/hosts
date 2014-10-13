@@ -1,0 +1,7 @@
+10.2.0.2	puppet1.dev.vagrant.victorops.net	puppet1.dev.vagrant	puppet1	puppet
+10.2.0.3	nagios1.dev.vagrant.victorops.net	nagios1.dev.vagrant	nagios1
+10.2.0.4	web1.dev.vagrant.victorops.net		web1.dev.vagrant	web1
+10.2.0.5	web2.dev.vagrant.victorops.net		web2.dev.vagrant	web2
+10.2.0.6	mysql1.dev.vagrant.victorops.net	mysql1.dev.vagrant	mysql1
+10.2.0.7	mysql2.dev.vagrant.victorops.net	mysql2.dev.vagrant	mysql2
+10.2.0.8	haproxy.dev.vagrant.victorops.net	haproxy.dev.vagrant	haproxy

@@ -1,0 +1,9 @@
+<% if @manifest -%>
+manifest = <%= @manifest %>
+<% end -%>
+<% if @custom_modulepath && @modulepath -%>
+modulepath = <%= [@modulepath].flatten.join(":") %>
+<% end -%>
+<% if @environment_timeout -%>
+environment_timeout = <%= @environment_timeout %>
+<% end -%>

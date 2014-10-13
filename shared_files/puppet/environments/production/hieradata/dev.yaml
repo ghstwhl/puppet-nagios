@@ -1,0 +1,21 @@
+---
+# development.yaml
+# overrides for the "dev" vo_env
+
+# Hierarchy is
+#  clientcert (fqdn)
+#  vo_env.vo_location
+#  vo_env
+#  vo_location
+#  defaults
+
+hiera_message: "This is a sample variable that came from the development Hiera datasource"
+
+# Class defaults
+
+mysql::server::root_password: 'develpass'
+
+# Other variables
+
+nrpe_mysql_user:      'root'
+nrpe_mysql_password:  'develpass'
