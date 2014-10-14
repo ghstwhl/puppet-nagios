@@ -7,7 +7,7 @@
 
 :hierarchy:
   - "%{::clientcert}"
-  - "%{::vo_env}.${::vo_location}
+  - "%{::vo_env}.${::vo_location}"
   - "%{::vo_env}"
   - "%{::vo_location}"
   - defaults
