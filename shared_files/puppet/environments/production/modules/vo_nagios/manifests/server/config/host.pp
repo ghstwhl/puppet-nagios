@@ -18,12 +18,7 @@ class vo_nagios::server::config::host {
       Nagios_host <<| tag == 'stg-host' |>>
     }
     'dev': {
-#       Nagios_host <<| tag == 'dev-host' |>>
-      Nagios_host <<| |>>
-      notify { 'hosts_collected':
-        message  => "I've collected the ${::vo_env} hosts",
-        withpath => true,
-      }
+      Nagios_host <<| tag == 'dev-host' |>>
     }
     'lab': {
       Nagios_host <<| tag == 'lab-host' |>>

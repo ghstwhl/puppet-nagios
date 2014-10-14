@@ -19,10 +19,4 @@ class vo_nagios::server::config::contactgroup {
     ensure  => present,
   }
 
-  # Purge unmanaged contactgroups
-  # Hint: this doesn't work
-  resources{ 'nagios_contactgroup':
-    purge => true,
-  }
-
 }

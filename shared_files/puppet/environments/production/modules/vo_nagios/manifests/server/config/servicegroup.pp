@@ -19,9 +19,4 @@ class vo_nagios::server::config::servicegroup {
     ensure  => present,
   }
 
-  # This doesn't work
-  resources{ 'nagios_servicegroup':
-    purge => true,
-  }
-
 }
