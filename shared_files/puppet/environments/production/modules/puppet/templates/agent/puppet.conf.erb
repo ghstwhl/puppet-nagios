@@ -19,8 +19,6 @@
     default_schedules = false
 
     report            = true
-    ordering          = manifest
-    ignorecache       = true
     pluginsync        = <%= scope.lookupvar('::puppet::pluginsync') %>
     masterport        = <%= scope.lookupvar("::puppet::port") rescue 8140 %>
     environment       = <%= @environment %>

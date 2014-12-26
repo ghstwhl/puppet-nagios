@@ -4,6 +4,9 @@ manifest = <%= @manifest %>
 <% if @custom_modulepath && @modulepath -%>
 modulepath = <%= [@modulepath].flatten.join(":") %>
 <% end -%>
+<% if !@config_version.nil? && !@config_version.empty? -%>
+config_version = <%= @config_version %>
+<% end -%>
 <% if @environment_timeout -%>
 environment_timeout = <%= @environment_timeout %>
 <% end -%>

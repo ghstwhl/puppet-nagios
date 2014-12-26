@@ -1,6 +1,6 @@
 # Set up the puppet server config
 class puppet::server::config inherits puppet::config {
-  if $puppet::server_passenger {
+  if $puppet::server_passenger and $::puppet::server_implementation == 'master' {
     # Anchor the passenger config inside this
     class { 'puppet::server::passenger': } -> Class['puppet::server::config']
   }
@@ -63,7 +63,10 @@ class puppet::server::config inherits puppet::config {
     creates => $::puppet::server::ssl_cert,
     command => "${puppet::params::puppetca_path}/${puppet::params::puppetca_bin} --generate ${::fqdn}",
     require => File["${puppet::server_dir}/puppet.conf"],
-    notify  => Service[$puppet::server_httpd_service],
+  }
+
+  if $puppet::server_passenger and $::puppet::server_implementation == 'master' {
+    Exec['puppet_server_config-generate_ca_cert'] ~> Service[$puppet::server_httpd_service]
   }
 
   file { "${puppet::server_vardir}/reports":
@@ -112,7 +115,7 @@ class puppet::server::config inherits puppet::config {
     file { "${puppet::server_manifest_path}/site.pp":
       ensure  => present,
       replace => false,
-      content => "# Empty site.pp required (puppet #15106, foreman #1708)\n",
+      content => "# site.pp must exist (puppet #15106, foreman #1708)\n",
       mode    => '0644',
     }
 

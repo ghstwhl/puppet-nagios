@@ -2,7 +2,6 @@
 ## Module:           '<%= scope.to_hash['module_name'] %>'
 
 [master]
-    ordering       = manifest
     autosign       = $confdir/autosign.conf { mode = 664 }
     reports        = <%= scope.lookupvar("puppet::server_reports") %>
     external_nodes = <%= @server_external_nodes %>
@@ -23,4 +22,8 @@
         scope.lookupvar("puppet::server_dynamic_environments") -%>
     manifest       = <%= scope.lookupvar("puppet::server_envs_dir") %>/$environment/manifests/site.pp
     modulepath     = <%= scope.lookupvar("puppet::server_envs_dir") %>/$environment/modules
+<% end -%>
+<% if scope.lookupvar("puppet::server_git_repo") ||
+        scope.lookupvar("puppet::server_dynamic_environments") -%>
+    config_version = <%= scope.lookupvar("puppet::server::config_version_cmd") %>
 <% end -%>
