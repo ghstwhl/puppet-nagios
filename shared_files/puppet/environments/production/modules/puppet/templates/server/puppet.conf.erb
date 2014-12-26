@@ -2,6 +2,7 @@
 ## Module:           '<%= scope.to_hash['module_name'] %>'
 
 [master]
+    ordering       = manifest
     autosign       = $confdir/autosign.conf { mode = 664 }
     reports        = <%= scope.lookupvar("puppet::server_reports") %>
     external_nodes = <%= @server_external_nodes %>
