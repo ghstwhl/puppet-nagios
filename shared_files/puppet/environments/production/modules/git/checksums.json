@@ -1,10 +1,14 @@
 {
-  "CHANGELOG.md": "a39a9243c387fb03ad27ae3b4970b3cd",
+  "CHANGELOG.md": "dc159952a9ab2017905673b8586a9d11",
+  "Gemfile": "6ea28588800510fc4558ab3a31d77eb5",
   "LICENSE": "9eef91148a9b14ec7f9df333daebc746",
-  "Modulefile": "9afb0bd8e64d095dba8708ff9d78784b",
   "README.md": "b38a17813ef4bb603579835cf7a2932a",
-  "manifests/init.pp": "7e1d425ae40e374258614183a9ccac8f",
-  "manifests/install.pp": "ae9100d0c519338f4263a4065cf0d3af",
-  "manifests/params.pp": "48fe2e7c22eade9010bb0e05e65cc1f0",
-  "manifests/repo.pp": "aec2adbea3a7c396d8219a0af6eeccab"
+  "Rakefile": "06670ae550c31d981a1e10a8918acbc1",
+  "manifests/init.pp": "58b1bb3cb3ef5c9d8a65e54bc73d8ef8",
+  "manifests/install.pp": "8d3f031bc48fdf6cb11e279401840136",
+  "manifests/params.pp": "74f5213857e21bbe429f4ae0e6a733c6",
+  "manifests/repo.pp": "337155bfcce7fd49f8826410f86b6092",
+  "metadata.json": "c33e8105af8a87dea9743d3414922e46",
+  "spec/spec.opts": "6af1d8720d85a510f132e3250aa61075",
+  "spec/spec_helper.rb": "8c3f2236892c856f0135cc23da78eb63"
 }
