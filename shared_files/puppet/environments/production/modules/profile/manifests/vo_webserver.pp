@@ -44,7 +44,6 @@ class profile::vo_webserver {
 
   class{ '::apache::mod::php': }
   class{ '::apache::mod::ssl': }
-  ::apache::mod{ 'authn_core': }
 
   @@haproxy::balancermember { "${::hostname}":
     listening_service => hiera('webapp_listening_service'),

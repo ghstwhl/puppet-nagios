@@ -10,7 +10,6 @@ class vo_nagios::server::install {
 
   class{ '::apache::mod::php': }
   class{ '::apache::mod::ssl': }
-  ::apache::mod{ 'authn_core': }
 
   package{ 'nagios3':
     ensure  =>  installed,
