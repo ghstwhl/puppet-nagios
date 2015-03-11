@@ -1,10 +1,10 @@
 {
   "name": "nanliu-staging",
-  "version": "1.0.2",
-  "author": "nanliu",
+  "version": "1.0.3",
+  "author": "Nan Liu",
   "summary": "Compressed file staging and deployment",
-  "license": "Apache License Version 2.0",
-  "source": "git@github.com:nanliu/puppet-staging.git",
+  "license": "Apache-2.0",
+  "source": "git://github.com/nanliu/puppet-staging",
   "project_page": "https://github.com/nanliu/puppet-staging",
   "issues_url": "https://github.com/nanliu/puppet-staging/issues",
   "operatingsystem_support": [

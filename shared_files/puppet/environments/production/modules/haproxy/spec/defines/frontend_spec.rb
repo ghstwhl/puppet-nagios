@@ -1,12 +1,20 @@
 require 'spec_helper'
 
 describe 'haproxy::frontend' do
+  let(:pre_condition) { 'include haproxy' }
   let(:title) { 'tyler' }
-  let(:facts) {{ :ipaddress => '1.1.1.1' }}
+  let(:facts) do
+    {
+      :ipaddress      => '1.1.1.1',
+      :osfamily       => 'Redhat',
+      :concat_basedir => '/dne',
+    }
+  end
   context "when only one port is provided" do
     let(:params) do
       {
         :name  => 'croy',
+        :ipaddress => '1.1.1.1',
         :ports => '18140'
       }
     end
@@ -111,6 +119,19 @@ describe 'haproxy::frontend' do
     end
   end
   # C9949
+  context "when a ports parameter and a bind parameter are passed" do
+    let(:params) do
+      {
+        :name  => 'apache',
+        :bind  => {'192.168.0.1:80' => ['ssl']},
+        :ports => '80'
+      }
+    end
+
+    it 'should raise error' do
+      expect { subject }.to raise_error Puppet::Error, /mutually exclusive/
+    end
+  end
   context "when multiple IPs are provided" do
     let(:params) do
       {
@@ -130,6 +151,7 @@ describe 'haproxy::frontend' do
     let(:params) do
       {
         :name         => 'apache',
+        :ipaddress    => '1.1.1.1',
         :ports        => ['80','8080'],
         :bind_options => [ 'the options', 'go here' ]
       }
@@ -154,6 +176,40 @@ describe 'haproxy::frontend' do
       'order'   => '15-apache-00',
       'target'  => '/etc/haproxy/haproxy.cfg',
       'content' => "\nfrontend apache\n  bind 23.23.23.23:80 \n  bind 23.23.23.23:443 \n  option  tcplog\n"
+    ) }
+  end
+
+  context "when bind parameter is used without ipaddress parameter" do
+    let(:params) do
+      {
+        :name  => 'apache',
+        :bind  => {'1.1.1.1:80' => []},
+      }
+    end
+    it { should contain_concat__fragment('apache_frontend_block').with(
+      'order'   => '15-apache-00',
+      'target'  => '/etc/haproxy/haproxy.cfg',
+      'content' => "\nfrontend apache\n  bind 1.1.1.1:80 \n  option  tcplog\n"
+    ) }
+  end
+
+  context "when bind parameter is used with more complex address constructs" do
+    let(:params) do
+      {
+        :name  => 'apache',
+        :bind  => {
+          '1.1.1.1:80'                 => [],
+          ':443,:8443'                 => [ 'ssl', 'crt public.puppetlabs.com', 'no-sslv3' ],
+          '2.2.2.2:8000-8010'          => [ 'ssl', 'crt public.puppetlabs.com' ],
+          'fd@${FD_APP1}'              => [],
+          '/var/run/ssl-frontend.sock' => [ 'user root', 'mode 600', 'accept-proxy' ]
+        },
+      }
+    end
+    it { should contain_concat__fragment('apache_frontend_block').with(
+      'order'   => '15-apache-00',
+      'target'  => '/etc/haproxy/haproxy.cfg',
+      'content' => "\nfrontend apache\n  bind /var/run/ssl-frontend.sock user root mode 600 accept-proxy\n  bind 1.1.1.1:80 \n  bind 2.2.2.2:8000-8010 ssl crt public.puppetlabs.com\n  bind :443,:8443 ssl crt public.puppetlabs.com no-sslv3\n  bind fd@${FD_APP1} \n  option  tcplog\n"
     ) }
   end
 

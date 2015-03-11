@@ -9,17 +9,19 @@
 3. [Setup - The basics of getting started with haproxy](#setup)
     * [Beginning with haproxy](#beginning-with-haproxy)
 4. [Usage - Configuration options and additional functionality](#usage)
-    * [Configuring haproxy options](#onfiguring-haproxy-options)
+    * [Configuring haproxy options](#configuring-haproxy-options)
     * [Configuring an HAProxy daemon listener](#configuring-haproxy-daemon-listener)
     * [Configuring HAProxy load-balanced member nodes](#configuring-haproxy-loadbalanced-member-nodes)
     * [Configuring a load balancer with exported resources](#configuring-a-load-balancer-with-exported-resources)
     * [Classes and Defined Types](#classes-and-defined-types)
         * [Class: haproxy](#class-haproxy)
-        * [Defined Type: haproxy::balancermember](defined-type-haproxybalancermember)
+        * [Defined Type: haproxy::balancermember](#defined-type-haproxybalancermember)
         * [Defined Type: haproxy::backend](#defined-type-haproxybackend)
         * [Defined type: haproxy::frontend](#defined-type-haproxyfrontend)
         * [Defined type: haproxy::listen](#defined-type-haproxylisten)
         * [Defined Type: haproxy::userlist](#define-type-haproxyuserlist)
+        * [Defined Type: haproxy::peers](#define-type-haproxypeers)
+        * [Defined Type: haproxy::peer](#define-type-haproxypeer)
 5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
     * [Public classes and defined types](#public-classes-and-defined-types)
     * [Private classes and defined types](#private-classes-and-defined-types)
@@ -28,12 +30,12 @@
 
 ##Overview
 
-The haproxy module provides the ability to install, configure, and manage HAProxy. 
+The haproxy module provides the ability to install, configure, and manage HAProxy.
 
 ##Module Description
 
-HAProxy is a daemon for load-balancing and proxying TCP and HTTP-based services. 
-This module configures proxy servers and manages the configuration of backend member servers. 
+HAProxy is a daemon for load-balancing and proxying TCP and HTTP-based services.
+This module configures proxy servers and manages the configuration of backend member servers.
 
 ##Setup
 
@@ -70,7 +72,7 @@ node 'haproxy-server' {
 
 ###Configuring haproxy options
 
-The main [`haproxy` class](#class-haproxy) has many options for configuring your HAProxy server. 
+The main [`haproxy` class](#class-haproxy) has many options for configuring your HAProxy server.
 
 ```puppet
 class { 'haproxy':
@@ -121,6 +123,29 @@ haproxy::listen { 'puppet00':
   },
 }
 ```
+###Configuring multi-network daemon listener
+
+One might have more advanced needs for the listen block, then use the `$bind` parameter:
+
+```puppet
+haproxy::listen { 'puppet00':
+  mode    => 'tcp',
+  options => {
+    'option'  => [
+      'tcplog',
+      'ssl-hello-chk',
+    ],
+    'balance' => 'roundrobin',
+  },
+  bind    => {
+    '10.0.0.1:443'             => ['ssl', 'crt', 'puppetlabs.com'],
+    '168.12.12.12:80'          => [],
+    '192.168.122.42:8000-8100' => ['ssl', 'crt', 'puppetlabs.com'],
+    ':8443,:8444'              => ['ssl', 'crt', 'internal.puppetlabs.com']
+  },
+}
+```
+Note: `$ports` or `$ipaddress` and `$bind` are mutually exclusive
 
 ###Configuring HAProxy load-balanced member nodes
 
@@ -183,7 +208,7 @@ The resulting HAProxy server will automatically collect configurations from back
 
 ####Class: `haproxy`
 
-This is the main class of the module, guiding the installation and configuration of at least one HAProxy server. 
+This is the main class of the module, guiding the installation and configuration of at least one HAProxy server.
 
 **Parameters:**
 
@@ -238,21 +263,21 @@ Specifies the title of the resource. The `name` is arbitrary and only utilized i
 An array of options to be specified after the server declaration in the listening service's configuration block.
 
 #####`ports`
-Sets the ports on which the balancer member will accept connections from the load balancer. Must be an array. If you use an array in `server\_names` and `ipaddresses`, the number of ports specified will multiply the number of balancermembers formed from the IP address and server name pairs.
+Sets the ports on which the balancer member will accept connections from the load balancer. If ports are specified, it must be an array. If you use an array in `server\_names` and `ipaddresses`, the number of ports specified will multiply the number of balancermembers formed from the IP address and server name pairs. If no port is specified, the balancermember will receive the traffic on the same port the frontend receive it (Very useful if used with a frontend with multiple bind ports).
 
 #####`server_names`
 Sets the name of the balancermember server in the listening service's configuration block. Defaults to the hostname. Can be an array. If this parameter is specified as an array, it must be the same length as the [`ipaddresses`](#ipaddresses) parameter's array. A balancermember is created for each pair of `server\_names` and `ipaddresses` in the array.hese pairs will be multiplied, and additional balancermembers created, based on the number of `ports` specified.
 
 ####Defined Type: `haproxy::backend`
 
-This type sets up a backend service configuration block inside the haproxy.cfg file on an HAProxy load balancer. Each backend service needs one or more load balancer member servers (declared with the [`haproxy::balancermember`](#defined-type-balancermember) defined type). 
+This type sets up a backend service configuration block inside the haproxy.cfg file on an HAProxy load balancer. Each backend service needs one or more load balancer member servers (declared with the [`haproxy::balancermember`](#defined-type-balancermember) defined type).
 
 Using storeconfigs, you can export the `haproxy::balancermember` resources on all load balancer member servers and collect them on a single HAProxy load balancer server.
 
 **Parameters**
 
 #####`name`
-Sets the backend service's name. Generally, it will be the namevar of the defined resource type. This value appears right after the 'backend' statement in haproxy.cfg 
+Sets the backend service's name. Generally, it will be the namevar of the defined resource type. This value appears right after the 'backend' statement in haproxy.cfg
 
 #####`options`
 A hash of options that are inserted into the backend service configuration block.
@@ -285,7 +310,22 @@ This type sets up a frontend service configuration block in haproxy.cfg. The HAP
 **Parameters**
 
 #####`bind_options`
-Lists an array of options to be specified after the bind declaration in the bind's configuration block.
+Lists an array of options to be specified after the bind declaration in the bind's configuration block. **Deprecated**: This parameter is being deprecated in favor of $bind
+
+#####`bind`
+A hash of listening addresses/ports, and a list of parameters that make up the listen service's `bind` lines. This is the most flexible way to configure listening services in a frontend or listen directive. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#4.2-bind for details.
+
+The hash keys represent the listening address and port, such as `192.168.122.1:80`, `10.1.1.1:8900-9000`, `:80,:8080` or `/var/run/haproxy-frontend.sock` and the key's value is an array of bind options for that listening address, such as `[ 'ssl', 'crt /etc/ssl/puppetlabs.com.crt', 'no-sslv3' ]`. Example:
+
+```puppet
+bind => {
+  '168.12.12.12:80'                     => [],
+  '192.168.1.10:8080,192.168.1.10:8081' => [],
+  '10.0.0.1:443-453'                    => ['ssl', 'crt', 'puppetlabs.com'],
+  ':8443,:8444'                         => ['ssl', 'crt', 'internal.puppetlabs.com'],
+  '/var/run/haproxy-frontend.sock'      => [ 'user root', 'mode 600', 'accept-proxy' ],
+}
+```
 
 #####`ipaddress`
 Specifies the IP address the proxy binds to. No value, '\*', and '0.0.0.0' mean that the proxy listens to all valid addresses on the system.
@@ -304,7 +344,7 @@ Sets the ports to listen on for the address specified in `ipaddress`. Accepts a 
 
 #####Example
 
-To route traffic from port 8140 to all balancermembers added to a backend with the title 'puppet_backend00', 
+To route traffic from port 8140 to all balancermembers added to a backend with the title 'puppet_backend00',
 
 ```puppet
 haproxy::frontend { 'puppet00':
@@ -326,17 +366,32 @@ haproxy::frontend { 'puppet00':
 
 ####Defined type: `haproxy::listen`
 
-This type sets up a listening service configuration block inside the haproxy.cfg file on an HAProxy load balancer. Each listening service configuration needs one or more load balancer member server (declared with the [`haproxy::balancermember`](#defined-type-balancermember) defined type). 
+This type sets up a listening service configuration block inside the haproxy.cfg file on an HAProxy load balancer. Each listening service configuration needs one or more load balancer member server (declared with the [`haproxy::balancermember`](#defined-type-balancermember) defined type).
 
 Using storeconfigs, you can export the `haproxy::balancermember` resources on all load balancer member servers and  collect them on a single HAProxy load balancer server.
 
 **Parameters:**
 
 #####`bind_options`
-Sets the options to be specified after the bind declaration in the listening service's configuration block. Displays as an array. 
+Sets the options to be specified after the bind declaration in the listening service's configuration block. Displays as an array. **Deprecated**: This parameter is being deprecated in favor of $bind
+
+#####`bind`
+A hash of listening addresses/ports, and a list of parameters that make up the listen service's `bind` lines. This is the most flexible way to configure listening services in a frontend or listen directive. See http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#4.2-bind for details.
+
+The hash keys represent the listening address and port, such as `192.168.122.1:80`, `10.1.1.1:8900-9000`, `:80,:8080` or `/var/run/haproxy-frontend.sock` and the key's value is an array of bind options for that listening address, such as `[ 'ssl', 'crt /etc/ssl/puppetlabs.com.crt', 'no-sslv3' ]`. Example:
+
+```puppet
+bind => {
+  '168.12.12.12:80'                     => [],
+  '192.168.1.10:8080,192.168.1.10:8081' => [],
+  '10.0.0.1:443-453'                    => ['ssl', 'crt', 'puppetlabs.com'],
+  ':8443,:8444'                         => ['ssl', 'crt', 'internal.puppetlabs.com'],
+  '/var/run/haproxy-frontend.sock'      => [ 'user root', 'mode 600', 'accept-proxy' ],
+}
+```
 
 #####`collect_exported`
-Enables exported resources from `haproxy::balancermember` to be collected, serving as a form of autodiscovery. Displays as a Boolean and defaults to 'true'. 
+Enables exported resources from `haproxy::balancermember` to be collected, serving as a form of autodiscovery. Displays as a Boolean and defaults to 'true'.
 
 The 'true' value means exported balancermember resources, for the case when every balancermember node exports itself, will be collected. Whereas, 'false' means the existing declared balancermember resources will be relied on; this is meant for cases when you know the full set of balancermembers in advance and use `haproxy::balancermember` with array arguments, allowing you to deploy everything in a single run.
 
@@ -371,6 +426,41 @@ An array of users in the userlist. See http://cbonte.github.io/haproxy-dconv/con
 #####`groups`
 An array of groups in the userlist. See http://cbonte.github.io/haproxy-dconv/configuration-1.4.html#3.4-group
 
+
+####Defined Type: `haproxy::peers`
+
+This type will set up a peers entry in /etc/haproxy/haproxy.cfg on the load balancer. This setting is required to share the current state of HAproxy with other HAproxy in High available configurations.
+
+** parameters **
+
+#####`name`
+Sets the peers' name. Generally it will be the namevar of the defined resource type. This value appears right after the 'peers' statement in haproxy.cfg
+
+
+####Defined Type: `haproxy::peer`
+
+This type will set up a peer entry inside the peers configuration block in /etc/haproxy/haproxy.cfg on the load balancer. Currently, it has the ability to specify the instance name, ip address, ports and server_names.
+
+Automatic discovery of peer nodes may be implemented by exporting the peer resource for all HAProxy balancer servers that are configured in the same HA block and then collecting them on all load balancers.
+
+**Parameters:**
+
+#####`peers_name`
+Specifies the peer in which this load balancer needs to be added.
+
+#####`server_names`
+Sets the name of the peer server in the peers configuration block. Defaults to the hostname. Can be an array. If this parameter is specified as an array, it must be the same length as the [`ipaddresses`](#ipaddresses) parameter's array. A peer is created for each pair of `server\_names` and `ipaddresses` in the array.
+
+####`ensure`
+Whether to add or remove the peer. Defaults to 'present'. Valid values are 'present' and 'absent'.
+
+#####`ipaddresses`
+Specifies the IP address used to contact the peer member server. Can be an array. If this parameter is specified as an array it must be the same length as the [`server\_names`](#server_names) parameter's array. A peer is created for each pair of address and server_name.
+
+#####`ports`
+Sets the port on which the peer is going to share the state.
+
+
 ##Reference
 
 ###Public classes and defined types
@@ -381,6 +471,8 @@ An array of groups in the userlist. See http://cbonte.github.io/haproxy-dconv/co
 * Define `haproxy::backend`: Creates a backend entry in the config
 * Define `haproxy::balancermember`: Creates server entries for listen or backend blocks.
 * Define `haproxy::userlist`: Creates a userlist entry in the config
+* Define `haproxy::peers`: Creates a peers entry in the config
+* Define `haproxy::peer`: Creates server entries for ha configuration inside peers.
 
 ###Private classes and defined types
 
@@ -389,10 +481,11 @@ An array of groups in the userlist. See http://cbonte.github.io/haproxy-dconv/co
 * Class `haproxy::config`: Configures haproxy.cfg.
 * Class `haproxy::service`: Manages service.
 * Define `haproxy::balancermember::collect_exported`: Collects exported balancermembers
+* Define `haproxy::peer::collect_exported`: Collects exported peers
 
 ##Limitations
 
-RedHat and Debian family OSes are officially supported. Tested and built on Ubuntu and CentOS. 
+RedHat and Debian family OSes are officially supported. Tested and built on Ubuntu and CentOS.
 
 ##Development
 

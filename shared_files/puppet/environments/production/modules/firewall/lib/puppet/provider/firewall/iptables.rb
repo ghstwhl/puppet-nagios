@@ -12,6 +12,7 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
   has_feature :recent_limiting
   has_feature :snat
   has_feature :dnat
+  has_feature :netmap
   has_feature :interface_match
   has_feature :icmp_match
   has_feature :owner
@@ -102,7 +103,10 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
     :todest           => "--to-destination",
     :toports          => "--to-ports",
     :tosource         => "--to-source",
+    :to               => "--to",
     :uid              => "-m owner --uid-owner",
+    :physdev_in       => "-m physdev --physdev-in",
+    :physdev_out      => "-m physdev --physdev-out",
   }
 
   # These are known booleans that do not take a value, but we want to munge
@@ -150,13 +154,13 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
   # changes between puppet runs, the changed rules will be re-applied again.
   # This order can be determined by going through iptables source code or just tweaking and trying manually
   @resource_list = [
-    :table, :source, :destination, :iniface, :outiface, :proto, :isfragment,
+    :table, :source, :destination, :iniface, :outiface, :physdev_in, :physdev_out, :proto, :isfragment,
     :stat_mode, :stat_every, :stat_packet, :stat_probability,
     :src_range, :dst_range, :tcp_flags, :gid, :uid, :mac_source, :sport, :dport, :port,
     :dst_type, :src_type, :socket, :pkttype, :name, :ipsec_dir, :ipsec_policy,
     :state, :ctstate, :icmp, :limit, :burst, :recent, :rseconds, :reap,
     :rhitcount, :rttl, :rname, :mask, :rsource, :rdest, :ipset, :jump, :todest,
-    :tosource, :toports, :random, :log_prefix, :log_level, :reject, :set_mark,
+    :tosource, :toports, :to, :random, :log_prefix, :log_level, :reject, :set_mark,
     :connlimit_above, :connlimit_mask, :connmark
   ]
 
@@ -231,7 +235,7 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
     # the actual rule will have the ! mark before the option.
     values = values.gsub(/(!)\s*(-\S+)\s*(\S*)/, '\2 "\1 \3"')
     # The match extension for tcp & udp are optional and throws off the @resource_map.
-    values = values.gsub(/-m (tcp|udp) (--(s|d)port|-m multiport)/, '\2')
+    values = values.gsub(/(?!-m tcp --tcp-flags)-m (tcp|udp) /, '')
     # '--pol ipsec' takes many optional arguments; we cheat again by adding " around them
     values = values.sub(/
         --pol\sipsec
@@ -259,13 +263,21 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
       end
     end
 
+    # Handle resource_map values depending on whether physdev-in, physdev-out, or both are specified
+    if values.include? "--physdev-in" and values.include? "--physdev-out" then
+      #values = values.sub("--physdev-out","-m physdev --physdev-out")
+      @resource_map[:physdev_out] = "--physdev-out"
+    else
+      @resource_map[:physdev_out] = "-m physdev --physdev-out"
+    end
+
     ############
     # Populate parser_list with used value, in the correct order
     ############
     map_index={}
     @resource_map.each_pair do |map_k,map_v|
       [map_v].flatten.each do |v|
-        ind=values.index(/\s#{v}/)
+        ind=values.index(/\s#{v}\s/)
         next unless ind
         map_index[map_k]=ind
      end
@@ -426,7 +438,7 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
 
   def delete_args
     # Split into arguments
-    line = properties[:line].gsub(/\-A/, '-D').split(/\s(?=(?:[^"]|"[^"]*")*$)/).map{|v| v.gsub(/"/, '')}
+    line = properties[:line].gsub(/\-A /, '-D ').split(/\s(?=(?:[^"]|"[^"]*")*$)/).map{|v| v.gsub(/"/, '')}
     line.unshift("-t", properties[:table])
   end
 
@@ -439,6 +451,13 @@ Puppet::Type.type(:firewall).provide :iptables, :parent => Puppet::Provider::Fir
     resource_list = self.class.instance_variable_get('@resource_list')
     resource_map = self.class.instance_variable_get('@resource_map')
     known_booleans = self.class.instance_variable_get('@known_booleans')
+
+    # Handle physdev args depending on whether physdev-in, physdev-out, or both are specified
+    if (resource[:physdev_in])
+      resource_map[:physdev_out] = "--physdev-out"
+    else
+      resource_map[:physdev_out] = "-m physdev --physdev-out"
+    end
 
     resource_list.each do |res|
       resource_value = nil

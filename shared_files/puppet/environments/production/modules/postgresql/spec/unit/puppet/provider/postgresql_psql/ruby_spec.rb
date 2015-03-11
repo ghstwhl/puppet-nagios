@@ -67,6 +67,18 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
       end
     end
   end
+   describe "with port string" do
+      let(:attributes) do { :port => '5555' } end
+
+      it "executes with the given port" do
+        expect(provider).to receive(:run_command).with(["psql",
+        "-p", "5555",
+        "-t", "-c", "SELECT something"],
+        "postgres", "postgres")
+
+        provider.run_sql_command("SELECT something")
+      end
+    end
 
   context("#run_unless_sql_command") do
     let(:attributes) do { } end

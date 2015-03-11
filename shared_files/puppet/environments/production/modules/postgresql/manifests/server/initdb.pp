@@ -67,18 +67,34 @@ class postgresql::server::initdb {
     if $::operatingsystem == 'Debian' or $::operatingsystem == 'Ubuntu' {
       if $::operatingsystemrelease =~ /^6/ or $::operatingsystemrelease =~ /^7/ or $::operatingsystemrelease =~ /^10\.04/ or $::operatingsystemrelease =~ /^12\.04/ {
         file { 'server.crt':
-          ensure => link,
-          path   => "${datadir}/server.crt",
-          target => '/etc/ssl/certs/ssl-cert-snakeoil.pem',
-          require   => Exec['postgresql_initdb'],
+          ensure  => link,
+          path    => "${datadir}/server.crt",
+          target  => '/etc/ssl/certs/ssl-cert-snakeoil.pem',
+          require => Exec['postgresql_initdb'],
         }
         file { 'server.key':
-          ensure => link,
-          path   => "${datadir}/server.key",
-          target => '/etc/ssl/private/ssl-cert-snakeoil.key',
-          require   => Exec['postgresql_initdb'],
+          ensure  => link,
+          path    => "${datadir}/server.key",
+          target  => '/etc/ssl/private/ssl-cert-snakeoil.key',
+          require => Exec['postgresql_initdb'],
         }
       }
+    }
+  } elsif $encoding != undef {
+    # [workaround]
+    # by default pg_createcluster encoding derived from locale
+    # but it do does not work by installing postgresql via puppet because puppet
+    # always override LANG to 'C'
+    postgresql_psql { "Set template1 encoding to ${encoding}":
+      command => "UPDATE pg_database
+        SET datistemplate = FALSE
+        WHERE datname = 'template1'
+        ;
+        UPDATE pg_database
+        SET encoding = pg_char_to_encoding('${encoding}'), datistemplate = TRUE
+        WHERE datname = 'template1'",
+      unless  => "SELECT datname FROM pg_database WHERE
+        datname = 'template1' AND pg_encoding_to_char(encoding) = '${encoding}'",
     }
   }
 }

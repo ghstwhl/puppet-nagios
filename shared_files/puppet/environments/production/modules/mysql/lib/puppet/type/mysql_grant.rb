@@ -4,6 +4,7 @@ Puppet::Type.newtype(:mysql_grant) do
   ensurable
 
   autorequire(:file) { '/root/.my.cnf' }
+  autorequire(:mysql_user) { self[:user] }
 
   def initialize(*args)
     super
@@ -70,9 +71,9 @@ Puppet::Type.newtype(:mysql_grant) do
       elsif matches = /^([0-9a-zA-Z$_]*)@([\w%\.:\-]+)/.match(value)
         user_part = matches[1]
         host_part = matches[2]
-      elsif matches = /^(?:(?!['`"]).*)([^0-9a-zA-Z$_]).*@.+$/.match(value)
-        # does not start with a quote, but contains a special character
-        raise(ArgumentError, "Database user #{value} must be properly quoted, invalid character: '#{matches[1]}'")
+      elsif matches = /^((?!['`"]).*[^0-9a-zA-Z$_].*)@(.+)$/.match(value)
+        user_part = matches[1]
+        host_part = matches[2]
       else
         raise(ArgumentError, "Invalid database user #{value}")
       end

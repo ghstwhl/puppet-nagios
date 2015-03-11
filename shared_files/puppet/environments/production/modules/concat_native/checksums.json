@@ -1,0 +1,17 @@
+{
+  "CHANGELOG.md": "8b5dcca36f6894f70178edafd4af41a0",
+  "COPYING": "2a944942e1496af1886903d274dedb13",
+  "Gemfile": "146a0e612db17b6bc6e233c2e2cbc203",
+  "LICENSE": "2a41a8cc82d57a8f9882be35b81a5378",
+  "README.md": "e57836fea75c8d4fe227cbab3180fff5",
+  "Rakefile": "5d38eec4207040ace7e08a0282792a61",
+  "lib/puppet/parser/functions/concat_output.rb": "729a61ad6dbb9fcc15139d6fa30db4da",
+  "lib/puppet/parser/functions/fragmentdir.rb": "8f03c227227a51d39d79d7eb3531a62c",
+  "lib/puppet/provider/concat_build/build.rb": "5b4dccb7598e58de5ea5c0d293b69ac7",
+  "lib/puppet/provider/concat_fragment/fragment.rb": "a70e7714c8d1a534275690c6d41061cc",
+  "lib/puppet/type/concat_build.rb": "5b9677fa2542acc05c2e555628cb5ebd",
+  "lib/puppet/type/concat_fragment.rb": "16ae917a25ae2eac926462606db9418c",
+  "metadata.json": "a7f408e6a096158205e96c5f2a35e291",
+  "spec/spec.opts": "6af1d8720d85a510f132e3250aa61075",
+  "spec/spec_helper.rb": "b8b96061f48b78aa30a5b2a36841a7e2"
+}
