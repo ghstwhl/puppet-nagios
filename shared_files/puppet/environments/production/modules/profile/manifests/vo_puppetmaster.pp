@@ -82,6 +82,9 @@ class profile::vo_puppetmaster {
   } ->
 
   class { 'foreman':
+    authentication  => true,
+    admin_username  => 'admin',
+    admin_password  => 'admin',
   }
 
   package { 'sqlite3':
