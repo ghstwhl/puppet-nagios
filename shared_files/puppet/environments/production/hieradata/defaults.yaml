@@ -12,7 +12,9 @@
 hiera_message: "This is a sample variable that came from the default Hiera datasource"
 
 # Class defaults
-puppet::agent: true
+puppet::agent:        true
+puppet::runinterval:  '600'
+puppet::splaylimit:   '600'
 
 mysql::server::root_password: 'mypass'
 

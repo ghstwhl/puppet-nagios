@@ -1,0 +1,18 @@
+---
+# nagios1.dev.vagrant.victorops.net.yaml
+# Default values for hiera
+
+# Hierarchy is
+#  clientcert (fqdn)
+#  vo_env.vo_location
+#  vo_env
+#  vo_location
+#  defaults
+
+hiera_message: "This came from the nagios1.dev.vagrant.victorops.net Hiera datasource"
+
+# Class defaults
+puppet::runinterval:  '300'
+puppet::splaylimit:   '300'
+
+# Other variables

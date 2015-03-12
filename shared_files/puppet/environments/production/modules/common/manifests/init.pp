@@ -70,8 +70,6 @@ class common {
 		$nagios_cfg_tmpdir = hiera('nagios_config_tmpdir')
 
     class { 'puppet':
-			runinterval	    => '300',
-			splaylimit	    => '300',
 			prerun_command  => "/bin/rm -f ${nagios_cfg_tmpdir}/*.cfg"
     }
   }
@@ -82,26 +80,17 @@ class common {
 
   if $vo_st_database_server {
     include ::profile::vo_dbserver
-    class { 'puppet':
-			runinterval	=> '600',
-			splaylimit	=> '600',
-    }
+    class { 'puppet': }
   }
 
   if $vo_st_web_server {
     include ::profile::vo_webserver
-    class { 'puppet':
-			runinterval	=> '600',
-			splaylimit	=> '600',
-    }
+    class { 'puppet': }
   }
 
   if $vo_st_haproxy_server {
     include ::profile::vo_haproxy
-    class { 'puppet':
-			runinterval	=> '600',
-			splaylimit	=> '600',
-    }
+    class { 'puppet': }
   }
 
   # Classes for every host
