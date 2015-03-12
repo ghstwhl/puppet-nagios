@@ -76,7 +76,7 @@ class vo_nagios::server::config {
   }
 
   # Build the configs from hiera and exported resources
-  class{ 'vo_nagios::server::config::config_prep': } ->
+  # class{ 'vo_nagios::server::config::config_prep': } ->
   class{ 'vo_nagios::server::config::hostgroup': } ->
   class{ 'vo_nagios::server::config::host': } ->
   class{ 'vo_nagios::server::config::servicegroup': } ->

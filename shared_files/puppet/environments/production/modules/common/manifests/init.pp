@@ -66,9 +66,13 @@ class common {
     if !$::vagrant_apply_bootstrap and !$::vagrant_agent_bootstrap {
 			include vo_nagios::server
 		}
+
+		$nagios_cfg_tmpdir = hiera('nagios_config_tmpdir')
+
     class { 'puppet':
-			runinterval	=> '300',
-			splaylimit	=> '300',
+			runinterval	    => '300',
+			splaylimit	    => '300',
+			prerun_command  => "/bin/rm -f ${nagios_cfg_tmpdir}/*.cfg"
     }
   }
 

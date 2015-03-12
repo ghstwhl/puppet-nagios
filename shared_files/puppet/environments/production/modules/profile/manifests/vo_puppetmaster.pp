@@ -30,11 +30,16 @@ class profile::vo_puppetmaster {
   class { 'puppet':
     server                      => true,
     server_passenger            => true,
+    server_implementation       => master,
     server_envs_dir             => '/etc/puppet/environments',
     server_storeconfigs_backend => 'puppetdb',
     server_git_repo_path				=> false,
     runinterval                 => '600',
     splaylimit                  => '600',
+    server_additional_settings  => {
+      ignorecache       => true,
+      ordering          => 'manifest',
+    }
   } ->
 
 
