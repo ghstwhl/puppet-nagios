@@ -27,6 +27,10 @@ if [[ ! -d /etc/puppet ]] ; then
 fi
 
 cp -rp /vagrant/puppet/* /etc/puppet/
+
+which puppet
+puppet --version
+
 SCRIPT
 
 $cleanup_apply_report = <<-'SCRIPT'
@@ -100,21 +104,24 @@ def add_server(ip, hostname, config, httpport, httpsport = [])
     if hostname =~ /^puppet.*/
       p.vm.provision :shell, :inline => $prep_puppetmaster
       p.vm.provision :puppet do |puppet|
-        puppet.manifests_path = "shared_files/puppet/environments/production/manifests"
-        puppet.module_path    = "shared_files/puppet/environments/production/modules"
-        puppet.manifest_file  = "site.pp"
+        puppet.manifests_path   = "shared_files/puppet/environments/production/manifests"
+        puppet.module_path      = "shared_files/puppet/environments/production/modules"
+        puppet.environment_path = "shared_files/puppet/environments/"
+	puppet.environment      = "production"
+        puppet.manifest_file    = "site.pp"
         puppet.facter = {
           "vagrant_apply_bootstrap" => "1"
         }
-        # puppet.options = '--debug --verbose'
         # puppet.options = '--verbose --debug --trace'
       end
       p.vm.provision :shell, :inline => $cleanup_apply_report
     else
       # p.vm.provision
       p.vm.provision "puppet_server" do |puppet|
-        puppet.puppet_server = "puppet1.dev.vagrant.victorops.net"
-	#puppet.options = '--debug --verbose'
+        puppet.puppet_server    = "puppet1.dev.vagrant.victorops.net"
+	#puppet.options         = '--debug --verbose'
+        puppet.environment_path = "shared_files/puppet/environments/"
+	puppet.environment      = "production"
 	puppet.facter = {
           "vagrant_agent_bootstrap" => "1"
         }
